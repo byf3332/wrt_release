@@ -28,9 +28,12 @@ jobs:
       - name: Build libatomic1 ipk only
         run: |
           cd libwrt
+          sed -i '/^CONFIG_PACKAGE_libatomic1[= ]/d' .config
           echo 'CONFIG_PACKAGE_libatomic1=m' >> .config
           make defconfig
-          make package/libs/toolchain/compile V=s -j$(nproc)
+          make tools/install -j$(nproc) V=s
+          make toolchain/install -j$(nproc) V=s
+          make package/libs/toolchain/compile -j$(nproc) V=s
           mkdir -p ../ipk-out
           find bin -name 'libatomic1*.ipk' -print -exec cp -f {} ../ipk-out/ \;
           ls -lh ../ipk-out/
