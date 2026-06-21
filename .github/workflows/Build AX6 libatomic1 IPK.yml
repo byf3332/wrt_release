@@ -1,0 +1,43 @@
+name: Build AX6 libatomic1 IPK
+
+on:
+  workflow_dispatch:
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  build-libatomic1:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Build System Setup
+        run: |
+          sudo bash -c 'bash <(curl -sL https://build-scripts.immortalwrt.org/init_build_environment.sh)'
+          sudo -E apt -yqq install dos2unix libfuse-dev
+          sudo -E apt -yqq autoremove --purge
+          sudo -E apt -yqq autoclean
+          sudo -E apt -yqq clean
+
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Prepare source and config
+        run: |
+          ./build.sh redmi_ax6_libwrt debug
+
+      - name: Build libatomic1 ipk only
+        run: |
+          cd action_build
+          echo 'CONFIG_PACKAGE_libatomic1=m' >> .config
+          make defconfig
+          make package/libs/toolchain/compile V=s -j$(nproc)
+          mkdir -p ../ipk-out
+          find bin -name 'libatomic1*.ipk' -print -exec cp -f {} ../ipk-out/ \;
+          ls -lh ../ipk-out/
+
+      - name: Upload libatomic1 ipk
+        uses: actions/upload-artifact@v6
+        with:
+          name: redmi_ax6_libwrt_libatomic1_ipk
+          path: ./ipk-out/*.ipk
