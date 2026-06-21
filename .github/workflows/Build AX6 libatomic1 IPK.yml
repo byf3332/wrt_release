@@ -29,16 +29,17 @@ jobs:
         run: |
           cd libwrt
           sed -i '/^CONFIG_PACKAGE_libatomic[0-9]*[= ]/d' .config
+          sed -i '/^CONFIG_PACKAGE_libatomic[= ]/d' .config
           echo 'CONFIG_PACKAGE_libatomic=m' >> .config
           make defconfig
-          grep -E '^CONFIG_PACKAGE_libatomic=' .config
+          grep -E '^CONFIG_PACKAGE_libatomic=m$' .config
           make tools/install -j$(nproc) V=s
           make toolchain/install -j$(nproc) V=s
           make package/libs/toolchain/compile -j$(nproc) V=s
           mkdir -p ../ipk-out
-          find bin -type f \( -name 'libatomic*.ipk' -o -name 'libatomic1*.ipk' \) -print -exec cp -f {} ../ipk-out/ \;
+          find bin -type f -name 'libatomic*.ipk' -print -exec cp -f {} ../ipk-out/ \;
           ls -lh ../ipk-out/
-          test -n "$(find ../ipk-out -type f -name '*.ipk' -print -quit)"
+          test -n "$(find ../ipk-out -type f -name 'libatomic*.ipk' -print -quit)"
           
       - name: Upload libatomic1 ipk
         uses: actions/upload-artifact@v6
