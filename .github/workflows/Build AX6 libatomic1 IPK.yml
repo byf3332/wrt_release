@@ -23,19 +23,18 @@ jobs:
         uses: actions/checkout@v6.0.2
 
       - name: Prepare source and config
-        run: |
-          ./build.sh redmi_ax6_libwrt debug
+        run: ./build.sh redmi_ax6_libwrt debug
 
       - name: Build libatomic1 ipk only
         run: |
-          cd action_build
+          cd libwrt
           echo 'CONFIG_PACKAGE_libatomic1=m' >> .config
           make defconfig
           make package/libs/toolchain/compile V=s -j$(nproc)
           mkdir -p ../ipk-out
           find bin -name 'libatomic1*.ipk' -print -exec cp -f {} ../ipk-out/ \;
           ls -lh ../ipk-out/
-
+          
       - name: Upload libatomic1 ipk
         uses: actions/upload-artifact@v6
         with:
